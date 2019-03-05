@@ -1,0 +1,50 @@
+@charset "UTF-8";
+body {
+  background: #000;
+  color: #fff; }
+
+.img {
+  background: url(http://localhost:8888/images/12dca31df316e24e65f8a51916c22db5.png) no-repeat;
+  background-size: 480px;
+  width: 480px;
+  height: 480px; }
+
+h1 {
+  text-shadow: 5px 5px 5px #FF0000; }
+
+div {
+  -webkit-animation: myfirst 5s;
+          animation: myfirst 5s;
+  text-shadow: 5px 5px 5px #FF0000;
+  -webkit-column-count: 3;
+          column-count: 3; }
+
+@keyframes myfirst {
+  from {
+    background: red; }
+  to {
+    background: yellow; } }
+
+@-webkit-keyframes myfirst /* Safari 和 Chrome */ {
+  from {
+    background: red; }
+  to {
+    background: yellow; } }
+
+.box {
+  width: 300px;
+  height: 300px;
+  color: red;
+  background-color: #eee;
+  box-shadow: 1px 2px 2px #eee; }
+
+h1 {
+  text-shadow: 5px 5px 5px #FF0000; }
+
+.sadasf {
+  -webkit-animation: myfirst 5s;
+  animation: myfirst 5s;
+  text-shadow: 5px 5px 5px #FF0000;
+  -webkit-column-count: 3;
+  column-count: 3; }
+

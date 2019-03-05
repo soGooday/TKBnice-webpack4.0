@@ -1,0 +1,506 @@
+1. npm i webpack webpack-cli webpack-dev-server -D
+
+★ npm i -D 是 npm install --save-dev 的简写，开发环境 ,package.json文件的devDependencies
+
+★ npm i -S 是 npm install --save 的简写，生产环境 ,package.json文件的dependencies 
+
+2.npm init -y  生成package.json文件，yes
+
+3.创建项目目录
+
+|- config
+|- dist
+	|- index.html
+|- src
+	|- index.js
+
+webpack4.x中打包默认找src/index.js作为默认入口
+输入命令 webpack 将当前的内容进行一个简单的打包
+一个是开发环境打包：webpack --mode=development
+生产环境打包：webpack --mode=production
+
+4.配置webpack.dev.js
+
+const path = require('path');
+
+module.exports = {
+  mode: 'development', // 模式配置
+  entry: { //入口文件配置
+    main: './src/main.js',
+    main2: './src/main2.js'
+
+  },
+  output: { //出口文件配置
+    //path.resolve把一个路径或路径片段的序列解析为一个绝对路径
+    path: path.resolve(__dirname, '../dist'), // 打包后的目录，必须是绝对路径
+    filename: '[name].js' // [name]打包后的文件名称,进入是什么名字出来也是
+    // 2.添加hash可以防止文件缓存，每次都会生成4位的hash串
+    // filename: 'bundle.[hash:4].js',   
+    // path: path.resolve(__dirname, '../dist')
+  },
+  //模块，例如解读CSS，图片转换，压缩
+  module: {},
+  //插件，用于生产模块和各项功能
+  plugins: [],
+  //配置webpack开发服务功能,npm install webpack-dev-server
+  devServer: {
+    //设置基本结构
+    contentBase:path.resolve(__dirname,'../dist'),
+    //服务器IP地址,可以是localhost
+    host:'localhost',
+    //服务端压缩是否开启
+    compress:true,
+    port:8888
+  }
+}
+
+5.启动服务
+
+webpack和webpack-dev-server 都已经安装
+
+在package.json文件修改：
+  "scripts": {
+	 //使用config/webpack.dev.js配置打包，npm run build
+    "build": "webpack --config=config/webpack.dev.js",    
+	//使用config/webpack.dev.js配置启动服务，npm run server
+    "server": "webpack-dev-server --config=config/webpack.dev.js"
+  }
+
+6.CSS文件打包
+
+新建src/css/index.css
+在入口文件main.js中引入才可以进行打包
+import css1 from './css/index.css'
+
+下载配置css 的loader：style-loader 和 css-loader
+npm install style-loader css-loader --save-dev下载依赖
+
+修改webpack.dev.js的module: 
+  module: {
+    rules:[
+      {
+        test:/\.css$/,
+        use:[
+          {loader:"style-loader"},
+          {loader:"css-loader"},
+        ]
+      }
+    ]
+  }
+
+7.配置JS压缩
+先来引入一个uglifyjs-webpack-plugin(JS压缩插件，简称uglify)
+const uglify = require('uglifyjs-webpack-plugin');
+webpack版本里默认已经集成
+
+修改webpack.dev.js的plugins：
+plugins:[
+        new uglify()
+],
+
+8.打包HTML文件
+
+先引入html-webpack-plugin插件，
+npm install --save-dev html-webpack-plugin
+
+需要将之前手动再dist文件夹下面写的index.html文件移到src文件夹下面，
+并去掉我们的JS引入代码（webpack会自动为我们引入JS），
+然后删除dist ，在打包npm run build
+
+到webpack.dev.config.js的plugins里面进行配置：
+ //插件，用于生产模版和各项功能
+    plugins:[
+        new uglify(),  //js压缩插件
+        new htmlPlugin({
+            minify:{ //是对html文件进行压缩
+                removeAttributeQuotes:true  //removeAttrubuteQuotes是却掉属性的双引号。
+            },
+            hash:true, //为了开发中js有缓存效果，所以加入hash，这样可以有效避免缓存JS。
+            template:'./src/index.html' //是要打包的html模版路径和文件名称。
+           
+        })
+    ],
+
+9.CSS中的图片处理
+
+在css文件写好引入的图片
+
+安装解析图片的loader：
+file-loader：解决引用路径的问题
+url-loader：如果图片较多，会发很多http请求，会降低页面性能，url-loader会将引入的图片编码，生成dataURl
+npm install --save-dev file-loader url-loader
+
+修改webpack.dev.config.js
+ //图片 loader
+            {
+                test:/\.(png|jpg|gif|jpeg)/,  //是匹配图片文件后缀名称
+                use:[{
+                    loader:'url-loader', //是指定使用的loader和loader的配置参数
+                    options:{
+                        limit:500  //是把小于500B的文件打成Base64的格式，写入JS
+                    }
+                }]
+            }
+
+
+10.JS压缩
+
+在webpack.dev.config.js中引入uglifyjs-webpack-glugin插件
+引入后在plugins配置里new一个 uglify对象就可以了。
+plugins:[
+        new uglify()
+    ],
+
+11.打包HTML文件
+
+dist文件夹index.html文件移到src文件夹下面
+并去掉我们的JS引入代码并去掉我们的JS引入代码
+（webpack会自动为我们引入JS）
+
+安装 npm install --save-dev html-webpack-plugin
+到webpack.dev.config.js的plugins里面进行配置
+
+ //插件，用于生产模版和各项功能
+    plugins:[
+        new uglify(),  //js压缩插件
+        new htmlPlugin({
+            minify:{ //是对html文件进行压缩
+                removeAttributeQuotes:true  //removeAttrubuteQuotes是却掉属性的双引号。
+            },
+            hash:true, //为了开发中js有缓存效果，所以加入hash，这样可以有效避免缓存JS。
+            template:'./src/index.html' //是要打包的html模版路径和文件名称。
+           
+        })
+    ],
+
+12.CSS中的图片处理
+
+在css文件写入引入路径
+
+下载两个解析图片的loader  file-loader 和 url-loader
+
+npm install --save-dev file-loader url-loader
+
+file-loader：解决引用路径的问题
+url-loader：图片较多，会发很多http请求，url-loader会将引入的图片编码，生成dataURl
+
+去webpack.dev.config.js文件配置下
+
+ //图片 loader
+            {
+                test:/\.(png|jpg|gif|jpeg)/,  //是匹配图片文件后缀名称
+                use:[{
+                    loader:'url-loader', //是指定使用的loader和loader的配置参数
+                    options:{
+                        limit:500  //是把小于500B的文件打成Base64的格式，写入JS
+                    }
+                }]
+            }
+
+13、css分离和图片路径处理
+把CSS从JavasScript代码中分离出来，还有一个是如何处理分离出来后CSS中的图片路径不对问题。
+
+下载一个css分离的插件：  extract-text-webpack-plugin
+npm install extract-text-webpack-plugin --save-dev
+
+npm install --save-dev extract-text-webpack-plugin@next //安装符合webpack版本的
+
+下载完插件后，需要我们配置一下
+
+plugins属性中:
+new extractTextPlugin("css/index.css")  //这里的/css/index.css 是分离后的路径
+
+css的loader的配置:
+  {
+               test:/\.css$/,
+               use: extractTextPlugin.extract({
+                    fallback: "style-loader",
+                    use: "css-loader"
+                  }),
+                // css分离后这里需要重新配置，下面就注释了
+                // use:[
+                //     {loader: "style-loader"},   
+                //     {loader:"css-loader"}
+                // ]
+            },  
+
+14.现在配置下我们的路径问题
+
+publicPath：是在webpack.dev.config.js文件的output选项中，主要作用就是处理静态文件路径的。
+
+在webpack.dev.config.js 上方声明一个对象，叫website。
+
+var website ={
+    publicPath:"http://localhost:8888/"
+    // publicPath:"http://192.168.1.103:8888/"
+}
+
+在output选项中引用这个对象的publicPath属性。
+ output:{
+         //打包的路径
+        path:path.resolve(__dirname,'../dist'),
+        //打包的文件名称
+        filename:'[name].js',   //这里[name] 是告诉我们入口进去的文件是什么名字，打包出来也同样是什么名字
+        publicPath:website.publicPath  //publicPath：主要作用就是处理静态文件路径的。
+    },
+
+配置完成后，你再使用webpack命令进行打包，
+你会发现原来的相对路径改为了绝对路径，这样来讲速度更快
+
+15、处理HTML中的图片
+
+在webpack中是不喜欢你使用标签<img>来引入图片的
+
+html-withimg-loader，把图片放到指定的文件夹下
+
+npm install html-withimg-loader --save-dev
+到webpack.dev.config.js中配置loader
+
+ //图片 loader
+            {
+                test:/\.(png|jpg|gif|jpeg)/,  //是匹配图片文件后缀名称
+                use:[{
+                    loader:'url-loader', //是指定使用的loader和loader的配置参数
+                    options:{
+                        limit:500,  //是把小于500B的文件打成Base64的格式，写入JS
+                        outputPath:'images/',  //打包后的图片放到images文件夹下
+                    }
+                }]
+            }
+
+这个时候打包会发现已经生成了images文件夹和图片的文件
+
+16、Less文件的打包和分离
+
+npm install --save-dev less
+npm install --save-dev less-loader
+现在再去webpack-dev.config配置less-loader
+ //less loader
+            {
+                test: /\.less$/,
+                use: [{
+                       loader: "style-loader" // creates style nodes from JS strings
+                    }, 
+                    {
+                        loader: "css-loader" // translates CSS into CommonJS
+                    },
+                    {
+                        loader: "less-loader" // compiles Less to CSS
+                    }]
+            }
+
+把Lees文件分离。
+这里和上面css文件分离基本一样，
+ //less loader
+            {
+                test: /\.less$/,
+                use: extractTextPlugin.extract({
+                    use: [{
+                        loader: "css-loader"
+                    }, {
+                        loader: "less-loader"
+                    }],
+                    // use style-loader in development
+                    fallback: "style-loader"
+                })
+            //     [{
+            //            loader: "style-loader" // creates style nodes from JS strings
+            //         }, 
+            //         {
+            //             loader: "css-loader" // translates CSS into CommonJS
+            //         },
+            //         {
+            //             loader: "less-loader" // compiles Less to CSS
+            //    }]
+            }
+
+把SASS文件分离。
+npm install  node-sass --save-dev 
+npm install  sass-loader --save-dev 
+
+配置loader配置
+   //scss loader
+           {
+               test: /\.scss$/,
+               use: [{
+                   loader: "style-loader" // creates style nodes from JS strings
+               }, {
+                   loader: "css-loader" // translates CSS into CommonJS
+               }, {
+                   loader: "sass-loader" // compiles Sass to CSS
+               }]
+           }
+上面已经下载过了插件，这里直接用就可以了
+{
+            test: /\.scss$/,
+            use: extractTextPlugin.extract({
+                use: [{
+                    loader: "css-loader"
+                }, {
+                    loader: "sass-loader"
+                }],
+                // use style-loader in development
+                fallback: "style-loader"
+            })
+ }
+
+自动处理CSS3属性前缀
+首先需要安装两个包postcss-loader 和autoprefixer（自动添加前缀的插件）
+npm install --save-dev postcss-loader autoprefixer
+
+postCSS推荐在项目根目录（和webpack.config.js同级），建立一个postcss.config.js文件。
+【注意：一定呀建在根目录下，不然会报错】
+module.exports={
+   plugins: [
+       require('autoprefixer') //自动添加前缀插件
+   ]
+}
+
+在webpack.dev.cnfig.js中配置
+
+  {
+       test:/\.css$/,
+       use: extractTextPlugin.extract({
+              fallback: "style-loader",
+             use:[{loader:"css-loader"},
+                        {
+                            loader:"postcss-loader",
+                        },
+                        ]
+                  })
+            },  
+
+17、消除未使用的CSS
+用PurifyCSS可以大大减少CSS冗余，
+比如我们经常使用的BootStrap(140KB)就可以减少到只有35KB大小。
+这在实际开发当中是非常有用的。
+
+安装PurifyCSS-webpack，依赖于purify-css这个包
+npm install purifycss-webpack purify-css --save-dev
+
+因为我们需要同步检查html模板，所以我们需要引入node的glob对象使用
+const glob = require('glob');
+const PurifyCSSPlugin = require("purifycss-webpack");
+
+然后在webpack.dev.config.js中配置 plugins
+注意： 使用这个插件必须配合extract-text-webpack-plugin这个插件
+new PurifyCSSPlugin({ 
+          //这里配置了一个paths，主要是需找html模板，purifycss根据这个配置会遍历你的文件，查找哪些css被使用了。
+          paths: glob.sync(path.join(__dirname, 'src/*.html')),
+          }),
+
+18、给webpack增加babel支持
+
+Babel的安装与配置
+npm install --save-dev babel-core babel-loader babel-preset-es2015 babel-preset-react
+
+//babel 配置
+           {
+               test:/\.(jsx|js)$/,
+               use:{
+                   loader:'babel-loader',
+                   options:{
+                       presets:[
+                           "es2015","react"
+                       ]
+                   }
+               },
+               exclude:/node_modules/
+           }
+
+.babelrc配置
+考虑到babel具有非常多的配置选项
+所以我们经常把配置卸载.babelrc文件里。
+
+.babelrc文件下
+{
+    "presets":["react","es2015"]
+}
+
+//babel 配置
+           {
+               test:/\.(jsx|js)$/,
+               use:{
+                   loader:'babel-loader',
+               },
+               exclude:/node_modules/
+           }
+
+不流行babel-preset-es2015，官方推荐使用的是babel-preset-env,
+
+安装 npm install --save-dev babel-preset-env
+修改.babelrc
+{
+    "presets":["react","env"]
+}
+
+
+19、mini-css-extract-plugin分离js中的css另外的插件支持webpack4.0
+修改配置
+//css loader
+      {
+        test: /\.(sa|sc|c)ss$/,
+        use: [
+          // devMode ? 'style-loader' : MiniCssExtractPlugin.loader,
+          //  MiniCssExtractPlugin.loader,//js分离css,使用style-loader不会分离
+          {
+            loader:  MiniCssExtractPlugin.loader,
+            options: {
+              // 这里可以指定一个 publicPath
+              // 默认使用 webpackOptions.output中的publicPath
+              // publicPath: path.resolve(__dirname, '../dist/css')
+            }
+          },
+          'css-loader',
+          'postcss-loader',
+          'sass-loader',
+        ],
+      },
+修改配置plugins
+    new MiniCssExtractPlugin({
+       // 类似 webpackOptions.output里面的配置 可以忽略
+      //  filename，对应于entry里面生成出来的文件名
+      //  chunkFilename，未被列在entry中，却又需要被打包出来的文件命名配置，如异步加载的模块文件
+        filename: devMode ? 'css/[name].css' : '[name].[hash].css',//可以更变文件产生路径
+        chunkFilename: devMode ? 'css/[id].css' : '[id].[hash].css',
+    }),
+
+
+20，按需加载
+当不需要按需加载的时候，我们的代码可能是这样的：
+import test from './components/test.vue'
+import test2 from './components/test2.vue'
+
+开启按需加载时，我们的代码修改为：
+const test = r => require.ensure([], () => r(require('./components/test.vue')), 'chunk1')
+const test2 = r => require.ensure([], () => r(require('./components/test2.vue')), 'chunk2')
+
+webpack 配置修改为
+output: {
+    ···
+    chunkFilename: '[name].[hash].js'
+}
+
+删除冗余代码
+webpack 4.0中，mode 为production 默认启动这一优化。
+但是，如果在项目中使用到babel的 话，需要把babel解析语法的功能关掉。只需要
+// .babelrc
+
+{
+  "presets": [["env", { "modules": false }]]
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

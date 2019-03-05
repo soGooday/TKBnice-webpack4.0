@@ -1,0 +1,42 @@
+body{
+  background: #000;
+  color: #fff;
+}
+.img{
+  background: url(../images/abc123.png) no-repeat;
+  background-size: 480px;
+  width:480px;
+  height:480px;
+}
+h1 {
+  text-shadow: 5px 5px 5px #FF0000; }
+div
+{
+animation: myfirst 5s;
+text-shadow: 5px 5px 5px #FF0000;
+column-count:3;
+}
+
+@keyframes myfirst
+{
+from {background: red;}
+to {background: yellow;}
+}
+
+@-moz-keyframes myfirst /* Firefox */
+{
+from {background: red;}
+to {background: yellow;}
+}
+
+@-webkit-keyframes myfirst /* Safari 和 Chrome */
+{
+from {background: red;}
+to {background: yellow;}
+}
+
+@-o-keyframes myfirst /* Opera */
+{
+from {background: red;}
+to {background: yellow;}
+}
